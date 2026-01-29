@@ -644,3 +644,288 @@
                 // closeDashboard(); // 点击空白处是否关闭？暂时保留
             }
         });
+        // --- 功能函数 ---
+
+        function switchView(mode) {
+            currentViewMode = mode;
+            // 更新按钮样式
+            document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // 更新柱体
+            bars.forEach(bar => {
+                const data = bar.userData.data;
+                // 颜色切换
+                let targetColor = data.colorHex;
+                if (mode === 'growth') {
+                    // 增长率热力图：红色(低) -> 绿色(高)
+                    const g = parseFloat(data.growthRate);
+                    const t = Math.min(Math.max((g - 2) / 20, 0), 1); // 归一化 2%~22%
+                    const color = new THREE.Color().setHSL(t * 0.35, 1.0, 0.5); // HSL 0(Red) to 0.35(Green)
+                    targetColor = color.getHex();
+                } else {
+                    targetColor = data.colorHex; // 恢复大洲颜色
+                }
+                
+                bar.material.color.setHex(targetColor);
+                bar.material.emissive.setHex(targetColor); // 更新自发光颜色
+                
+                // 高度目标切换
+                bar.userData.targetHeight = mode === 'growth' ? bar.userData.heightGrowth : bar.userData.heightCount;
+            });
+        }
+
+        function selectCountry(bar) {
+            const data = bar.userData.data;
+            selectedCountry = data;
+            
+            // 1. 地球旋转定位
+            autoRotate = false;
+            const spherical = new THREE.Spherical().setFromVector3(bar.position);
+            targetRotation.y = -spherical.theta - Math.PI / 2;
+            targetRotation.x = Math.PI / 2 - spherical.phi;
+
+            // 2. 更新面板内容
+            openDashboard(data);
+        }
+
+        // --- 图表生成器 (SVG) ---
+
+        function createTrendChart(history) {
+            const w = 280, h = 100;
+            const max = Math.max(...history) * 1.1;
+            const min = Math.min(...history) * 0.9;
+            const points = history.map((val, i) => {
+                const x = (i / (history.length - 1)) * w;
+                const y = h - ((val - min) / (max - min)) * h;
+                return `${x},${y}`;
+            }).join(' ');
+
+            // 生成面积闭合路径
+            const areaPoints = `0,${h} ${points} ${w},${h}`;
+
+            return `
+                <svg viewBox="0 0 ${w} ${h}">
+                    <defs>
+                        <linearGradient id="grad" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:var(--primary-color);stop-opacity:0.3" />
+                            <stop offset="100%" style="stop-color:var(--primary-color);stop-opacity:0" />
+                        </linearGradient>
+                    </defs>
+                    <path class="area-path" d="M${areaPoints} Z" fill="url(#grad)" />
+                    <polyline points="${points}" class="line-path" />
+                    <!-- 数据点 -->
+                    ${history.map((val, i) => {
+                         const x = (i / (history.length - 1)) * w;
+                         const y = h - ((val - min) / (max - min)) * h;
+                         return `<circle cx="${x}" cy="${y}" r="3" fill="#fff" />`;
+                    }).join('')}
+                </svg>
+            `;
+        }
+
+        function createRadarChart(skills) {
+            const size = 140;
+            const center = size / 2;
+            const radius = size / 2 - 10;
+            const sides = skills.length;
+            
+            // 计算坐标函数
+            const getPoint = (idx, value) => {
+                const angle = (Math.PI * 2 * idx) / sides - Math.PI / 2;
+                const r = (value / 100) * radius;
+                return {
+                    x: center + r * Math.cos(angle),
+                    y: center + r * Math.sin(angle)
+                };
+            };
+
+            // 生成网格
+            let gridSVG = '';
+            [0.2, 0.4, 0.6, 0.8, 1.0].forEach(level => {
+                const pts = skills.map((_, i) => {
+                    const p = getPoint(i, level * 100);
+                    return `${p.x},${p.y}`;
+                }).join(' ');
+                gridSVG += `<polygon points="${pts}" class="radar-bg" />`;
+            });
+
+            // 数据多边形
+            const dataPoints = skills.map((s, i) => {
+                const p = getPoint(i, s.val);
+                return `${p.x},${p.y}`;
+            }).join(' ');
+
+            // 轴线与标签
+            const axesSVG = skills.map((s, i) => {
+                const p = getPoint(i, 115); // 标签位置
+                return `<text x="${p.x}" y="${p.y}" fill="#888" font-size="10" text-anchor="middle" alignment-baseline="middle">${s.name}</text>`;
+            }).join('');
+
+            return `
+                <svg viewBox="0 0 ${size} ${size}">
+                    ${gridSVG}
+                    <polygon points="${dataPoints}" class="radar-poly" />
+                    ${axesSVG}
+                </svg>
+            `;
+        }
+
+        // --- UI 更新逻辑 ---
+
+        function openDashboard(data) {
+            document.getElementById('dash-title').innerText = data.country;
+            document.getElementById('dash-continent').innerText = data.continent;
+            document.getElementById('dash-count').innerText = data.count + '万';
+            document.getElementById('dash-growth').innerText = '+' + data.growthRate + '%';
+            document.getElementById('dash-rank').innerText = '#' + data.rank;
+            document.getElementById('dash-score').innerText = data.score;
+
+            // 渲染图表
+            document.getElementById('trendChart').innerHTML = createTrendChart(data.history);
+            
+            // 渲染技能条
+            const techHTML = data.skills.map(s => `
+                <div class="skill-row">
+                    <span class="skill-name">${s.name}</span>
+                    <div class="skill-bar-bg">
+                        <div class="skill-bar-fill" style="width: ${s.val}%"></div>
+                    </div>
+                    <span style="margin-left:5px; width:30px; text-align:right;">${Math.round(s.val)}%</span>
+                </div>
+            `).join('');
+            document.getElementById('techStackList').innerHTML = techHTML;
+
+            // 渲染雷达图
+            document.getElementById('radarChart').innerHTML = createRadarChart(data.skills);
+
+            // 动画切换面板
+            document.getElementById('rankPanel').classList.add('hidden');
+            document.getElementById('rightPanel').classList.add('active');
+        }
+
+        function closeDashboard() {
+            document.getElementById('rankPanel').classList.remove('hidden');
+            document.getElementById('rightPanel').classList.remove('active');
+            autoRotate = true; // 恢复旋转
+        }
+        
+        // --- 渲染左下角大洲统计表 ---
+        function renderRegionTable() {
+            // 聚合数据
+            const regionStats = {};
+            fullData.forEach(d => {
+                if(!regionStats[d.continent]) {
+                    regionStats[d.continent] = { count: 0, growthSum: 0, num: 0 };
+                }
+                regionStats[d.continent].count += d.count;
+                regionStats[d.continent].growthSum += parseFloat(d.growthRate);
+                regionStats[d.continent].num++;
+            });
+            
+            const tbody = document.getElementById('regionTableBody');
+            
+            // 排序：按总人数降序
+            const sortedRegions = Object.keys(regionStats).sort((a,b) => regionStats[b].count - regionStats[a].count);
+            
+            sortedRegions.forEach(r => {
+                const s = regionStats[r];
+                const avgGrowth = (s.growthSum / s.num).toFixed(1);
+                const totalCount = s.count.toFixed(1);
+                
+                // 颜色
+                const colorHex = config.colors[config.colorMap[r]];
+                const colorStr = '#' + colorHex.toString(16).padStart(6, '0');
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><span style="color:${colorStr}; margin-right:5px;">●</span>${r}</td>
+                    <td class="num">${totalCount}M</td>
+                    <td class="num ${avgGrowth > 10 ? 'trend-up' : 'trend-neutral'}">+${avgGrowth}%</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+        
+        renderRegionTable(); // 启动时调用
+
+        window.closeDashboard = closeDashboard;
+        window.switchView = switchView;
+
+        // 初始化排行榜
+        const rankList = document.getElementById('rankingList');
+        fullData.slice(0, 10).forEach(d => {
+            const div = document.createElement('div');
+            div.className = 'rank-item';
+            div.innerHTML = `
+                <span class="rank-num ${d.rank<=3?'top3':''}">${d.rank}</span>
+                <span class="rank-name">${d.country}</span>
+                <span class="rank-val">${d.count}万</span>
+            `;
+            div.onclick = () => {
+                const bar = bars.find(b => b.userData.data === d);
+                if(bar) selectCountry(bar);
+            };
+            rankList.appendChild(div);
+        });
+
+        // 初始化图例
+        const legendDiv = document.getElementById('legendList');
+        Object.keys(config.colorMap).forEach(k => {
+            const color = '#' + config.colors[config.colorMap[k]].toString(16).padStart(6,'0');
+            legendDiv.innerHTML += `<span style="color:${color}">●</span> ${k} <br>`;
+        });
+
+        // 搜索功能
+        document.getElementById('countrySearch').addEventListener('change', (e) => {
+            const val = e.target.value.toLowerCase();
+            const found = bars.find(b => b.userData.data.country.toLowerCase().includes(val) || b.userData.data.zh.includes(val));
+            if(found) selectCountry(found);
+            else alert('Country not found in top database.');
+        });
+
+        // --- 渲染循环 ---
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // 1. 旋转控制
+            if(autoRotate) targetRotation.y += 0.001;
+            
+            earthGroup.rotation.y += (targetRotation.y - earthGroup.rotation.y) * 0.05;
+            earthGroup.rotation.x += (targetRotation.x - earthGroup.rotation.x) * 0.05;
+
+            // 2. 柱体动画 (Lerp height)
+            bars.forEach(bar => {
+                bar.userData.currentHeight += (bar.userData.targetHeight - bar.userData.currentHeight) * 0.1;
+                bar.scale.z = bar.userData.currentHeight;
+            });
+
+            // 3. 射线检测 Tooltip
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(hitObjects);
+            
+            const tooltip = document.getElementById('tooltip');
+            if (intersects.length > 0 && !isDragging) {
+                const data = intersects[0].object.userData.linkedBar.userData.data;
+                document.body.style.cursor = 'pointer';
+                tooltip.innerHTML = `<strong>${data.country}</strong><br>Devs: ${data.count}M<br>Growth: +${data.growthRate}%`;
+                tooltip.style.display = 'block';
+            } else {
+                document.body.style.cursor = 'default';
+                tooltip.style.display = 'none';
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // 窗口自适应
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
