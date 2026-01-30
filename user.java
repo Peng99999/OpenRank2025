@@ -414,6 +414,31 @@ public class SessionManager {
     }
 }
 
+public class User {
+    private String username;
+    private String email;
+    private String role;
+    private String profilePictureUrl; // Store profile picture URL
+
+    // Constructor
+    public User(String username, String email, String role, String profilePictureUrl) {
+        this.username = username;
+        this.email = email;
+        this.role = role;
+        this.profilePictureUrl = profilePictureUrl;
+    }
+
+    // Getter and Setter for profilePictureUrl
+    public String getProfilePictureUrl() {
+        return profilePictureUrl;
+    }
+
+    public void setProfilePictureUrl(String profilePictureUrl) {
+        this.profilePictureUrl = profilePictureUrl;
+    }
+}
+
+
 
 
 
