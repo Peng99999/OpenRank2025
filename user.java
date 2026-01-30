@@ -234,6 +234,43 @@ public class UserValidator {
     }
 }
 
+public class User {
+    private String username;
+    private String email;
+    private String role;
+    private String address;
+    private String phoneNumber;
+
+    // Constructor
+    public User(String username, String email, String role, String address, String phoneNumber) {
+        this.username = username;
+        this.email = email;
+        this.role = role;
+        this.address = address;
+        this.phoneNumber = phoneNumber;
+    }
+
+    // Getters and Setters for address and phone number
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    // Other existing getters and setters...
+}
+
+
 
 
 
