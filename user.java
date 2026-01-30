@@ -495,6 +495,27 @@ public class EmailVerificationManager {
         }
     }
 }
+public class UserManager {
+    private List<User> users;
+
+    public UserManager() {
+        users = new ArrayList<>();
+    }
+
+    // Other methods...
+
+    // Search users by role
+    public List<User> searchUsersByRole(String role) {
+        List<User> result = new ArrayList<>();
+        for (User user : users) {
+            if (user.getRole().equalsIgnoreCase(role)) {
+                result.add(user);
+            }
+        }
+        return result;
+    }
+}
+
 
 
 
