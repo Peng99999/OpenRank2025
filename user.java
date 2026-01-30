@@ -367,6 +367,16 @@ public class UserPasswordManager {
         }
     }
 }
+import java.util.Date;
+
+public class UserActivityLog {
+
+    public static void logActivity(User user, String activity) {
+        Date date = new Date();
+        System.out.println("Activity Log: User: " + user.getUsername() + ", Activity: " + activity + ", Date: " + date);
+    }
+}
+
 
 
 
