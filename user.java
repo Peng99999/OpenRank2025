@@ -471,6 +471,31 @@ public class PasswordResetManager {
         }
     }
 }
+public class EmailVerificationManager {
+    private Map<String, Boolean> emailVerifications;
+
+    public EmailVerificationManager() {
+        emailVerifications = new HashMap<>();
+    }
+
+    // Send a verification email (simulated here)
+    public void sendVerificationEmail(User user) {
+        String verificationToken = UUID.randomUUID().toString();
+        emailVerifications.put(user.getEmail(), false); // Email initially not verified
+        System.out.println("Verification email sent to: " + user.getEmail() + " with token: " + verificationToken);
+    }
+
+    // Verify the user's email using the verification token
+    public void verifyEmail(String email, String token) {
+        if (emailVerifications.containsKey(email)) {
+            emailVerifications.put(email, true);
+            System.out.println("Email verified for user: " + email);
+        } else {
+            System.out.println("Invalid email or verification token.");
+        }
+    }
+}
+
 
 
 
