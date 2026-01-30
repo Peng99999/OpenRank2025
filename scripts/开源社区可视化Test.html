@@ -143,3 +143,69 @@
 
 </div>
 
+<script>
+function updateTime() {
+  const now = new Date();
+  document.getElementById('time').innerText = now.toLocaleString();
+}
+setInterval(updateTime, 1000);
+updateTime();
+
+function baseChart(dom) {
+  return echarts.init(document.getElementById(dom));
+}
+
+// 模块1 折线：仓库增长
+baseChart('chart1').setOption({
+  tooltip: {},
+  xAxis: { type: 'category', data: ['1月','2月','3月','4月','5月','6月'] },
+  yAxis: { type: 'value' },
+  series: [{ type: 'line', data: [120, 180, 260, 300, 420, 560], smooth: true }]
+});
+
+// 模块2 柱状：贡献者
+baseChart('chart2').setOption({
+  tooltip: {},
+  xAxis: { type: 'category', data: ['核心','活跃','普通','新手'] },
+  yAxis: { type: 'value' },
+  series: [{ type: 'bar', data: [35, 120, 340, 260] }]
+});
+
+// 模块3 饼图：提交类型
+baseChart('chart3').setOption({
+  tooltip: {},
+  series: [{
+    type: 'pie',
+    radius: '70%',
+    data: [
+      { value: 45, name: '功能' },
+      { value: 25, name: '修复' },
+      { value: 15, name: '文档' },
+      { value: 15, name: '重构' }
+    ]
+  }]
+});
+
+// 模块4 折线：Issue处理时长
+baseChart('chart4').setOption({
+  tooltip: {},
+  xAxis: { type: 'category', data: ['周一','周二','周三','周四','周五'] },
+  yAxis: { type: 'value' },
+  series: [{ type: 'line', data: [36, 28, 30, 22, 18] }]
+});
+
+// 模块5 饼图：语言占比
+baseChart('chart5').setOption({
+  series: [{
+    type: 'pie',
+    radius: ['40%','75%'],
+    data: [
+      { value: 40, name: 'Python' },
+      { value: 25, name: 'JS/TS' },
+      { value: 15, name: 'C++' },
+      { value: 10, name: 'Go' },
+      { value: 10, name: 'Others' }
+    ]
+  }]
+});
+
