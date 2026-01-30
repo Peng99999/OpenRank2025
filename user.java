@@ -330,6 +330,24 @@ public class User {
     // Other existing methods...
 }
 
+public class AccessControl {
+
+    // Check if the user has access to a specific resource based on their role
+    public static boolean hasAccess(User user, String resource) {
+        if ("admin".equals(user.getRole())) {
+            return true; // Admin has access to all resources
+        }
+
+        // Example: only "user" role can access "viewProfile"
+        if ("user".equals(user.getRole()) && "viewProfile".equals(resource)) {
+            return true;
+        }
+
+        return false;
+    }
+}
+
+
 
 
 
