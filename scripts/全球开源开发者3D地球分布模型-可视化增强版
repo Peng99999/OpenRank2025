@@ -647,3 +647,34 @@
                 selectCountry(bar);
             }
         });
+        // ================= 功能函数 =================
+
+        // 视图切换：总量 vs 增长
+        function switchView(mode) {
+            currentViewMode = mode;
+            // 更新按钮激活状态
+            document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // 批量更新所有柱体
+            bars.forEach(bar => {
+                const data = bar.userData.data;
+                // 1. 颜色切换逻辑
+                let targetColor = data.colorHex;
+                if (mode === 'growth') {
+                    // 增长率热力图模式：红色(低) -> 绿色(高)
+                    const g = parseFloat(data.growthRate);
+                    const t = Math.min(Math.max((g - 2) / 20, 0), 1); // 归一化到 0~1
+                    const color = new THREE.Color().setHSL(t * 0.35, 1.0, 0.5); // HSL 色相从 0(红) 到 0.35(绿)
+                    targetColor = color.getHex();
+                } else {
+                    targetColor = data.colorHex; // 恢复大洲颜色
+                }
+                
+                bar.material.color.setHex(targetColor);
+                bar.material.emissive.setHex(targetColor);
+                
+                // 2. 高度目标切换
+                bar.userData.targetHeight = mode === 'growth' ? bar.userData.heightGrowth : bar.userData.heightCount;
+            });
+        }
