@@ -681,6 +681,34 @@ public class FileUploadManager {
         }
     }
 }
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+
+public class PasswordExpirationManager {
+
+    private static final int PASSWORD_EXPIRATION_DAYS = 90; // Password expires after 90 days
+    private LocalDate passwordLastChanged;
+
+    // Constructor
+    public PasswordExpirationManager(LocalDate passwordLastChanged) {
+        this.passwordLastChanged = passwordLastChanged;
+    }
+
+    // Check if the user's password has expired
+    public boolean isPasswordExpired() {
+        long daysSinceLastChanged = ChronoUnit.DAYS.between(passwordLastChanged, LocalDate.now());
+        return daysSinceLastChanged > PASSWORD_EXPIRATION_DAYS;
+    }
+
+    // Force a user to reset their password if expired
+    public void forcePasswordReset(User user) {
+        if (isPasswordExpired()) {
+            System.out.println("Password expired for user: " + user.getUsername() + ". Please reset your password.");
+        } else {
+            System.out.println("Password valid for user: " + user.getUsername());
+        }
+    }
+}
 
 
 
