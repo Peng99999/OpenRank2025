@@ -335,3 +335,37 @@
     </div>
 
 </div>
+<script>
+// --- 基础工具 ---
+const getEle = (id) => document.getElementById(id);
+const myChart = (id) => echarts.init(getEle(id));
+
+// 1. 时间更新
+function updateTime() {
+    const now = new Date();
+    getEle('time').innerText = now.toLocaleTimeString('en-US', {hour12: false});
+    getEle('date').innerText = now.toLocaleDateString('zh-CN');
+}
+setInterval(updateTime, 1000);
+updateTime();
+
+// 数字增长动画
+function animateValue(id, start, end, duration) {
+    let startTimestamp = null;
+    const step = (timestamp) => {
+        if (!startTimestamp) startTimestamp = timestamp;
+        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+        getEle(id).innerHTML = Math.floor(progress * (end - start) + start).toLocaleString();
+        if (progress < 1) {
+            window.requestAnimationFrame(step);
+        }
+    };
+    window.requestAnimationFrame(step);
+}
+// 模拟初始数据加载
+animateValue("total-repos", 0, 12845, 2000);
+animateValue("total-commits", 0, 3429, 2000);
+animateValue("active-devs", 0, 892, 2000);
+
+// --- 图表配置 ---
+const colorPalette = ['#00f2ff', '#0080ff', '#bd00ff', '#ff00ee', '#ffa600'];
