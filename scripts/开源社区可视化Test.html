@@ -369,3 +369,49 @@ animateValue("active-devs", 0, 892, 2000);
 
 // --- 图表配置 ---
 const colorPalette = ['#00f2ff', '#0080ff', '#bd00ff', '#ff00ee', '#ffa600'];
+// Chart 1: 实时折线图 (模拟动态数据)
+const chartRealtime = myChart('chart-realtime');
+let dataTime = [];
+let dataCommit = [];
+let dataIssue = [];
+let now = new Date();
+
+function addData(shift) {
+    now = new Date(+now + 1000);
+    dataTime.push([now.getHours(), now.getMinutes(), now.getSeconds()].join(':'));
+    dataCommit.push(Math.round(Math.random() * 20 + 10)); // 10-30
+    dataIssue.push(Math.round(Math.random() * 10 + 2));   // 2-12
+    if (shift) {
+        dataTime.shift();
+        dataCommit.shift();
+        dataIssue.shift();
+    }
+}
+for (let i = 0; i < 20; i++) { addData(false); }
+
+const optionRealtime = {
+    tooltip: { trigger: 'axis', backgroundColor: 'rgba(0,0,0,0.8)', borderColor: '#00f2ff', textStyle: {color: '#fff'} },
+    grid: { top: 30, bottom: 20, left: 40, right: 10, containLabel: true },
+    xAxis: { type: 'category', boundaryGap: false, data: dataTime, axisLine: {lineStyle: {color: '#1f4f7a'}} },
+    yAxis: { type: 'value', splitLine: {lineStyle: {color: '#0d2134'}} },
+    series: [
+        {
+            name: 'Commits', type: 'line', smooth: true, symbol: 'none',
+            lineStyle: { width: 3, shadowBlur: 10, shadowColor: '#00f2ff', color: '#00f2ff' },
+            areaStyle: {
+                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{offset: 0, color: 'rgba(0, 242, 255, 0.4)'}, {offset: 1, color: 'rgba(0, 242, 255, 0.0)'}])
+            },
+            data: dataCommit
+        },
+        {
+            name: 'Issues', type: 'line', smooth: true, symbol: 'none',
+            lineStyle: { width: 3, shadowBlur: 10, shadowColor: '#bd00ff', color: '#bd00ff' },
+            data: dataIssue
+        }
+    ]
+};
+chartRealtime.setOption(optionRealtime);
+setInterval(function () {
+    addData(true);
+    chartRealtime.setOption({ xAxis: { data: dataTime }, series: [{ data: dataCommit }, { data: dataIssue }] });
+}, 2000);
