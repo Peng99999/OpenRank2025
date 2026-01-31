@@ -843,6 +843,16 @@ public class PasswordStrengthValidator {
         return true;
     }
 }
+import java.time.LocalDateTime;
+
+public class UserActivityWithTimestamp {
+
+    // Log user activity with timestamp
+    public static void logActivity(User user, String activity) {
+        LocalDateTime timestamp = LocalDateTime.now();
+        System.out.println("User Activity Log: User: " + user.getUsername() + ", Activity: " + activity + ", Timestamp: " + timestamp);
+    }
+}
 
 
 
