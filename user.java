@@ -568,6 +568,30 @@ public class LoginHistoryManager {
     }
 }
 
+import java.util.HashMap;
+import java.util.Map;
+
+public class NotificationManager {
+
+    private Map<String, String> notifications;
+
+    public NotificationManager() {
+        notifications = new HashMap<>();
+    }
+
+    // Send a notification to a user
+    public void sendNotification(User user, String message) {
+        notifications.put(user.getEmail(), message);
+        System.out.println("Notification sent to " + user.getEmail() + ": " + message);
+    }
+
+    // View notifications for a user
+    public String getNotifications(User user) {
+        return notifications.getOrDefault(user.getEmail(), "No notifications.");
+    }
+}
+
+
 
 
 
