@@ -138,3 +138,40 @@
         position: relative;
         overflow: hidden;
     }
+    /* 中央大图区域 */
+    .center-map {
+        grid-row: 1 / 2;
+        grid-column: 2 / 3;
+        border: none;
+        background: transparent;
+        position: relative;
+    }
+    
+    /* 覆盖在中央地图上的数字看板 */
+    .digital-board {
+        position: absolute;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 50px;
+        z-index: 5;
+    }
+    .db-item {
+        text-align: center;
+        background: rgba(0,0,0,0.5);
+        padding: 10px 20px;
+        border: 1px solid rgba(0,242,255,0.3);
+        box-shadow: 0 0 15px rgba(0,242,255,0.1) inset;
+    }
+    .db-num {
+        font-size: 2.5rem;
+        color: #fff;
+        font-weight: bold;
+        text-shadow: 0 0 10px var(--accent-blue);
+    }
+    .db-label {
+        color: var(--accent-cyan);
+        font-size: 0.9rem;
+        letter-spacing: 2px;
+    }
