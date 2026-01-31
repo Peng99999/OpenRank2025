@@ -851,3 +851,35 @@
         renderRegionTable(); // 启动时调用
         window.closeDashboard = closeDashboard;
         window.switchView = switchView;
+        // 初始化排行榜 DOM
+        const rankList = document.getElementById('rankingList');
+        fullData.slice(0, 10).forEach(d => {
+            const div = document.createElement('div');
+            div.className = 'rank-item';
+            div.innerHTML = `
+                <span class="rank-num ${d.rank<=3?'top3':''}">${d.rank}</span>
+                <span class="rank-name">${d.country}</span>
+                <span class="rank-val">${d.count}万</span>
+            `;
+            // 点击排行榜项联动 3D 地球
+            div.onclick = () => {
+                const bar = bars.find(b => b.userData.data === d);
+                if(bar) selectCountry(bar);
+            };
+            rankList.appendChild(div);
+        });
+
+        // 初始化图例
+        const legendDiv = document.getElementById('legendList');
+        Object.keys(config.colorMap).forEach(k => {
+            const color = '#' + config.colors[config.colorMap[k]].toString(16).padStart(6,'0');
+            legendDiv.innerHTML += `<span style="color:${color}">●</span> ${k} <br>`;
+        });
+
+        // 搜索功能实现
+        document.getElementById('countrySearch').addEventListener('change', (e) => {
+            const val = e.target.value.toLowerCase();
+            const found = bars.find(b => b.userData.data.country.toLowerCase().includes(val) || b.userData.data.zh.includes(val));
+            if(found) selectCountry(found);
+            else alert('Country not found in top database.');
+        });
