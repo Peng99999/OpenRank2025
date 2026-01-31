@@ -2,275 +2,37 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8" />
-<title>开源社区可视化大屏</title>
-<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>开源社区全域态势感知系统 | Open Source Intelligence</title>
+<!-- 引入科技感字体 -->
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<!-- 引入 GL 库用于更酷炫的效果 (可选，这里用标准版模拟高性能效果) -->
 <style>
-  body {
-    margin: 0;
-    font-family: "Segoe UI", Arial, sans-serif;
-    background: #0b1c2d;
-    color: #e6f1ff;
-  }
-  .header {
-    height: 70px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 30px;
-    background: linear-gradient(90deg, #0f2b46, #123a60);
-    border-bottom: 1px solid #1f4f7a;
-  }
-  .header h1 {
-    margin: 0;
-    font-size: 26px;
-    letter-spacing: 1px;
-  }
-  .header .time {
-    font-size: 16px;
-    opacity: 0.9;
-  }
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    grid-template-rows: repeat(2, 1fr);
-    gap: 12px;
-    padding: 12px;
-    height: calc(100vh - 70px);
-    box-sizing: border-box;
-  }
-  .panel {
-    background: linear-gradient(180deg, #10263c, #0d2134);
-    border: 1px solid #1e4466;
-    border-radius: 10px;
-    position: relative;
-    overflow: hidden;
-  }
-  .panel-title {
-    position: absolute;
-    top: 8px;
-    left: 12px;
-    font-size: 14px;
-    color: #7fd3ff;
-    z-index: 2;
-  }
-  .chart {
-    width: 100%;
-    height: 100%;
-  }
-  .list {
-    padding: 40px 16px 16px 16px;
-    font-size: 14px;
-    line-height: 1.8;
-  }
-  .list-item {
-    display: flex;
-    justify-content: space-between;
-    border-bottom: 1px dashed #1f4f7a;
-    padding: 6px 0;
-  }
-  .badge {
-    background: #1f4f7a;
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 12px;
-  }
-</style>
-</head>
-<body>
+    :root {
+        --bg-color: #050a14;
+        --panel-bg: rgba(12, 24, 42, 0.6);
+        --border-color: rgba(30, 164, 255, 0.3);
+        --accent-cyan: #00f2ff;
+        --accent-blue: #0080ff;
+        --accent-purple: #bd00ff;
+        --text-primary: #e6f1ff;
+        --text-secondary: #8daacb;
+    }
 
-<div class="header">
-  <h1>开源社区运行态势可视化大屏</h1>
-  <div class="time" id="time"></div>
-</div>
-
-<div class="grid">
-
-  <!-- 模块1：仓库增长趋势 -->
-  <div class="panel">
-    <div class="panel-title">模块1：仓库增长趋势</div>
-    <div id="chart1" class="chart"></div>
-  </div>
-
-  <!-- 模块2：活跃贡献者分布 -->
-  <div class="panel">
-    <div class="panel-title">模块2：活跃贡献者分布</div>
-    <div id="chart2" class="chart"></div>
-  </div>
- <!-- 模块3：提交类型占比 -->
-  <div class="panel">
-    <div class="panel-title">模块3：提交类型占比</div>
-    <div id="chart3" class="chart"></div>
-  </div>
-<!-- 模块4：Issue处理时长 -->
-  <div class="panel">
-    <div class="panel-title">模块4：Issue处理时长</div>
-    <div id="chart4" class="chart"></div>
-  </div>
-
-  <!-- 模块5：语言占比 -->
-  <div class="panel">
-    <div class="panel-title">模块5：代码语言占比</div>
-    <div id="chart5" class="chart"></div>
-  </div>
-<!-- 模块6：地区贡献热力（模拟） -->
-  <div class="panel">
-    <div class="panel-title">模块6：地区贡献指数</div>
-    <div id="chart6" class="chart"></div>
-  </div>
-<!-- 模块7：PR合并率 -->
-  <div class="panel">
-    <div class="panel-title">模块7：PR合并率</div>
-    <div id="chart7" class="chart"></div>
-  </div>
-
-  <!-- 模块8：版本发布节奏 -->
-  <div class="panel">
-    <div class="panel-title">模块8：版本发布节奏</div>
-    <div id="chart8" class="chart"></div>
-  </div>
-
-  <!-- 模块9：Top仓库排行 -->
-  <div class="panel">
-    <div class="panel-title">模块9：Top仓库排行</div>
-    <div id="chart9" class="chart"></div>
-  </div>
-
-  <!-- 模块10：社区动态列表 -->
-  <div class="panel">
-    <div class="panel-title">模块10：社区实时动态</div>
-    <div class="list" id="eventList"></div>
-  </div>
-
-</div>
-
-<script>
-function updateTime() {
-  const now = new Date();
-  document.getElementById('time').innerText = now.toLocaleString();
-}
-setInterval(updateTime, 1000);
-updateTime();
-
-function baseChart(dom) {
-  return echarts.init(document.getElementById(dom));
-}
-
-// 模块1 折线：仓库增长
-baseChart('chart1').setOption({
-  tooltip: {},
-  xAxis: { type: 'category', data: ['1月','2月','3月','4月','5月','6月'] },
-  yAxis: { type: 'value' },
-  series: [{ type: 'line', data: [120, 180, 260, 300, 420, 560], smooth: true }]
-});
-
-// 模块2 柱状：贡献者
-baseChart('chart2').setOption({
-  tooltip: {},
-  xAxis: { type: 'category', data: ['核心','活跃','普通','新手'] },
-  yAxis: { type: 'value' },
-  series: [{ type: 'bar', data: [35, 120, 340, 260] }]
-});
-
-// 模块3 饼图：提交类型
-baseChart('chart3').setOption({
-  tooltip: {},
-  series: [{
-    type: 'pie',
-    radius: '70%',
-    data: [
-      { value: 45, name: '功能' },
-      { value: 25, name: '修复' },
-      { value: 15, name: '文档' },
-      { value: 15, name: '重构' }
-    ]
-  }]
-});
-
-// 模块4 折线：Issue处理时长
-baseChart('chart4').setOption({
-  tooltip: {},
-  xAxis: { type: 'category', data: ['周一','周二','周三','周四','周五'] },
-  yAxis: { type: 'value' },
-  series: [{ type: 'line', data: [36, 28, 30, 22, 18] }]
-});
-
-// 模块5 饼图：语言占比
-baseChart('chart5').setOption({
-  series: [{
-    type: 'pie',
-    radius: ['40%','75%'],
-    data: [
-      { value: 40, name: 'Python' },
-      { value: 25, name: 'JS/TS' },
-      { value: 15, name: 'C++' },
-      { value: 10, name: 'Go' },
-      { value: 10, name: 'Others' }
-    ]
-  }]
-});
-// 模块6 雷达：地区贡献指数
-baseChart('chart6').setOption({
-  tooltip: {},
-  radar: {
-    indicator: [
-      { name: '北美', max: 100 },
-      { name: '欧洲', max: 100 },
-      { name: '中国', max: 100 },
-      { name: '印度', max: 100 },
-      { name: '其他', max: 100 }
-    ]
-  },
-  series: [{ type: 'radar', data: [{ value: [90, 76, 88, 70, 55] }] }]
-});
-
-// 模块7 仪表盘：PR合并率
-baseChart('chart7').setOption({
-  series: [{
-    type: 'gauge',
-    progress: { show: true },
-    detail: { valueAnimation: true, formatter: '{value}%' },
-    data: [{ value: 72, name: '合并率' }]
-  }]
-});
-
-// 模块8 柱状：发布节奏
-baseChart('chart8').setOption({
-  tooltip: {},
-  xAxis: { type: 'category', data: ['v1','v2','v3','v4','v5'] },
-  yAxis: { type: 'value' },
-  series: [{ type: 'bar', data: [12, 9, 15, 7, 11] }]
-});
-
-// 模块9 横向排行
-baseChart('chart9').setOption({
-  tooltip: {},
-  xAxis: { type: 'value' },
-  yAxis: { type: 'category', data: ['repo-A','repo-B','repo-C','repo-D','repo-E'] },
-  series: [{ type: 'bar', data: [980, 870, 760, 640, 520] }]
-});
-
-// 模块10 动态列表
-const events = [
-  'repo-A 合并PR #231',
-  'repo-C 发布 v2.4.1',
-  'repo-B 新增Issue #553',
-  'repo-D Star 数突破 10k',
-  'repo-E 新贡献者加入'
-];
-function renderEvents() {
-  const el = document.getElementById('eventList');
-  el.innerHTML = events.map((e,i)=>`<div class="list-item"><span>${e}</span><span class="badge">${i+1}</span></div>`).join('');
-}
-renderEvents();
-
-window.addEventListener('resize', () => {
-  for (let i = 1; i <= 9; i++) {
-    echarts.getInstanceByDom(document.getElementById('chart'+i))?.resize();
-  }
-});
-</script>
-
-</body>
-</html>
-
-
+    * { box-sizing: border-box; }
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Rajdhani', "Microsoft YaHei", sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-primary);
+        overflow: hidden;
+        height: 100vh;
+        /* 复杂的背景网格 */
+        background-image: 
+            linear-gradient(rgba(0, 242, 255, 0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0, 242, 255, 0.03) 1px, transparent 1px),
+            radial-gradient(circle at center, #0a1f35 0%, #050a14 100%);
+        background-size: 30px 30px, 30px 30px, 100% 100%;
+    }
