@@ -313,3 +313,19 @@
             <div id="legendList" style="font-size: 12px; line-height: 1.8;"></div>
         </div>
     </div>
+    <!-- 左下角：区域数据汇总表 -->
+    <div id="bottomLeftPanel" class="glass-panel">
+        <div class="panel-title">Regional Analysis</div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Region</th>
+                    <th style="text-align:right">Total Devs</th>
+                    <th style="text-align:right">Avg Growth</th>
+                </tr>
+            </thead>
+            <tbody id="regionTableBody">
+                <!-- JS 动态填充 -->
+            </tbody>
+        </table>
+    </div>
