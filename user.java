@@ -727,6 +727,32 @@ public class UserPreferences {
         return preferences.getOrDefault(user.getEmail() + "_" + key, "Default");
     }
 }
+public class UserActivityReport {
+
+    private Map<String, List<String>> activityLogs;
+
+    public UserActivityReport() {
+        activityLogs = new HashMap<>();
+    }
+
+    // Log user activity (e.g., login, update profile)
+    public void logActivity(User user, String activity) {
+        String timestamp = new Date().toString();
+        String log = "Activity: " + activity + " | Timestamp: " + timestamp;
+        activityLogs.putIfAbsent(user.getEmail(), new ArrayList<>());
+        activityLogs.get(user.getEmail()).add(log);
+        System.out.println("Activity logged for " + user.getUsername() + ": " + activity);
+    }
+
+    // Generate report for a user
+    public void generateReport(User user) {
+        System.out.println("Generating activity report for: " + user.getUsername());
+        List<String> logs = activityLogs.getOrDefault(user.getEmail(), new ArrayList<>());
+        for (String log : logs) {
+            System.out.println(log);
+        }
+    }
+}
 
 
 
