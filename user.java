@@ -791,6 +791,29 @@ public class UserDataExport {
         }
     }
 }
+import java.util.HashMap;
+import java.util.Map;
+
+public class UserIpTracking {
+
+    private Map<String, String> userIpAddresses;
+
+    public UserIpTracking() {
+        userIpAddresses = new HashMap<>();
+    }
+
+    // Track user's IP address during login
+    public void trackIpAddress(User user, String ipAddress) {
+        userIpAddresses.put(user.getEmail(), ipAddress);
+        System.out.println("IP Address tracked for user: " + user.getUsername() + " | IP: " + ipAddress);
+    }
+
+    // Get user's last tracked IP address
+    public String getLastIpAddress(User user) {
+        return userIpAddresses.getOrDefault(user.getEmail(), "No IP address tracked.");
+    }
+}
+
 
 
 
