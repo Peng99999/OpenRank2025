@@ -618,3 +618,19 @@
                 tooltip.style.top = (e.clientY + 15) + 'px';
             }
         });
+        // 拖拽控制逻辑
+        document.addEventListener('mousedown', () => { isDragging = true; autoRotate = false; });
+        document.addEventListener('mouseup', () => isDragging = false);
+        
+        document.addEventListener('mousemove', e => {
+            if (isDragging) {
+                const deltaMove = {
+                    x: e.offsetX - previousMousePosition.x,
+                    y: e.offsetY - previousMousePosition.y
+                };
+                // 更新目标旋转角度
+                targetRotation.y += deltaMove.x * 0.005;
+                targetRotation.x += deltaMove.y * 0.005;
+            }
+            previousMousePosition = { x: e.offsetX, y: e.offsetY };
+        });
