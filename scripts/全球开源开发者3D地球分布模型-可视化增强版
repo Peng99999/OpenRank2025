@@ -883,3 +883,48 @@
             if(found) selectCountry(found);
             else alert('Country not found in top database.');
         });
+        // ================= 渲染循环 =================
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // 1. 旋转平滑处理 (插值算法)
+            if(autoRotate) targetRotation.y += 0.001;
+            
+            earthGroup.rotation.y += (targetRotation.y - earthGroup.rotation.y) * 0.05;
+            earthGroup.rotation.x += (targetRotation.x - earthGroup.rotation.x) * 0.05;
+
+            // 2. 柱体高度动画 (Lerp 插值)
+            bars.forEach(bar => {
+                bar.userData.currentHeight += (bar.userData.targetHeight - bar.userData.currentHeight) * 0.1;
+                bar.scale.z = bar.userData.currentHeight;
+            });
+
+            // 3. 射线检测 Tooltip 逻辑
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(hitObjects);
+            
+            const tooltip = document.getElementById('tooltip');
+            if (intersects.length > 0 && !isDragging) {
+                const data = intersects[0].object.userData.linkedBar.userData.data;
+                document.body.style.cursor = 'pointer';
+                tooltip.innerHTML = `<strong>${data.country}</strong><br>Devs: ${data.count}M<br>Growth: +${data.growthRate}%`;
+                tooltip.style.display = 'block';
+            } else {
+                document.body.style.cursor = 'default';
+                tooltip.style.display = 'none';
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // 窗口大小自适应
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
